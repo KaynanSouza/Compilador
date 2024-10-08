@@ -1,0 +1,3 @@
+/home/kaynan/Documentos/trabalho/compilador/Compilador/cmake-build-debug/CMakeFiles/Compilador.dir
+/home/kaynan/Documentos/trabalho/compilador/Compilador/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/kaynan/Documentos/trabalho/compilador/Compilador/cmake-build-debug/CMakeFiles/rebuild_cache.dir
