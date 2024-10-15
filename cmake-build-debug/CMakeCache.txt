@@ -224,6 +224,15 @@ Compilador_IS_TOP_LEVEL:STATIC=ON
 //Value Computed by CMake
 Compilador_SOURCE_DIR:STATIC=/home/kaynan/Documentos/trabalho/compilador/Compilador
 
+//Value Computed by CMake
+MyCompiler_BINARY_DIR:STATIC=/home/kaynan/Documentos/trabalho/compilador/Compilador/cmake-build-debug
+
+//Value Computed by CMake
+MyCompiler_IS_TOP_LEVEL:STATIC=ON
+
+//Value Computed by CMake
+MyCompiler_SOURCE_DIR:STATIC=/home/kaynan/Documentos/trabalho/compilador/Compilador
+
 
 ########################
 # INTERNAL cache entries

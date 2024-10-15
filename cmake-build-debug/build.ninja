@@ -49,12 +49,6 @@ cmake_ninja_workdir = /home/kaynan/Documentos/trabalho/compilador/Compilador/cma
 
 build cmake_object_order_depends_target_Compilador: phony || .
 
-build CMakeFiles/Compilador.dir/main.cpp.o: CXX_COMPILER__Compilador_unscanned_Debug /home/kaynan/Documentos/trabalho/compilador/Compilador/main.cpp || cmake_object_order_depends_target_Compilador
-  DEP_FILE = CMakeFiles/Compilador.dir/main.cpp.o.d
-  FLAGS = -g -std=gnu++20 -fdiagnostics-color=always
-  OBJECT_DIR = CMakeFiles/Compilador.dir
-  OBJECT_FILE_DIR = CMakeFiles/Compilador.dir
-
 build CMakeFiles/Compilador.dir/src/compiler.cpp.o: CXX_COMPILER__Compilador_unscanned_Debug /home/kaynan/Documentos/trabalho/compilador/Compilador/src/compiler.cpp || cmake_object_order_depends_target_Compilador
   DEP_FILE = CMakeFiles/Compilador.dir/src/compiler.cpp.o.d
   FLAGS = -g -std=gnu++20 -fdiagnostics-color=always
@@ -73,6 +67,18 @@ build CMakeFiles/Compilador.dir/src/symbol_table.cpp.o: CXX_COMPILER__Compilador
   OBJECT_DIR = CMakeFiles/Compilador.dir
   OBJECT_FILE_DIR = CMakeFiles/Compilador.dir/src
 
+build CMakeFiles/Compilador.dir/src/parser.cpp.o: CXX_COMPILER__Compilador_unscanned_Debug /home/kaynan/Documentos/trabalho/compilador/Compilador/src/parser.cpp || cmake_object_order_depends_target_Compilador
+  DEP_FILE = CMakeFiles/Compilador.dir/src/parser.cpp.o.d
+  FLAGS = -g -std=gnu++20 -fdiagnostics-color=always
+  OBJECT_DIR = CMakeFiles/Compilador.dir
+  OBJECT_FILE_DIR = CMakeFiles/Compilador.dir/src
+
+build CMakeFiles/Compilador.dir/src/parser_tests.cpp.o: CXX_COMPILER__Compilador_unscanned_Debug /home/kaynan/Documentos/trabalho/compilador/Compilador/src/parser_tests.cpp || cmake_object_order_depends_target_Compilador
+  DEP_FILE = CMakeFiles/Compilador.dir/src/parser_tests.cpp.o.d
+  FLAGS = -g -std=gnu++20 -fdiagnostics-color=always
+  OBJECT_DIR = CMakeFiles/Compilador.dir
+  OBJECT_FILE_DIR = CMakeFiles/Compilador.dir/src
+
 
 # =============================================================================
 # Link build statements for EXECUTABLE target Compilador
@@ -81,7 +87,7 @@ build CMakeFiles/Compilador.dir/src/symbol_table.cpp.o: CXX_COMPILER__Compilador
 #############################################
 # Link the executable Compilador
 
-build Compilador: CXX_EXECUTABLE_LINKER__Compilador_Debug CMakeFiles/Compilador.dir/main.cpp.o CMakeFiles/Compilador.dir/src/compiler.cpp.o CMakeFiles/Compilador.dir/src/scanner.cpp.o CMakeFiles/Compilador.dir/src/symbol_table.cpp.o
+build Compilador: CXX_EXECUTABLE_LINKER__Compilador_Debug CMakeFiles/Compilador.dir/src/compiler.cpp.o CMakeFiles/Compilador.dir/src/scanner.cpp.o CMakeFiles/Compilador.dir/src/symbol_table.cpp.o CMakeFiles/Compilador.dir/src/parser.cpp.o CMakeFiles/Compilador.dir/src/parser_tests.cpp.o
   FLAGS = -g
   OBJECT_DIR = CMakeFiles/Compilador.dir
   POST_BUILD = :
