@@ -22,6 +22,25 @@ enum class TokenType {
     REAL,
     INTEGER,
     RETURN,
+    IF,
+    THEN,
+    ELSE,
+    END_IF,
+    WHILE,
+    DO,
+    END_WHILE,
+    FOR,
+    TO,
+    END_FOR,
+    AND,
+    OR,
+    NOT,
+    LESS,          // <
+    LESS_EQUAL,    // <=
+    GREATER,       // >
+    GREATER_EQUAL, // >=
+    EQUAL_EQUAL,   // ==
+    NOT_EQUAL,     // !=
     PLUS,          // +
     MINUS,         // -
     STAR,          // *

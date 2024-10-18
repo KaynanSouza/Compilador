@@ -1,8 +1,7 @@
-// scanner.cpp
 #include "scanner.hpp"
 #include <cctype>
 #include <unordered_map>
-#include <iostream> // Adicionado para logs
+#include <iostream>
 
 static std::unordered_map<std::string, TokenType> keywords = {
     {"VAR", TokenType::VAR},
@@ -15,7 +14,20 @@ static std::unordered_map<std::string, TokenType> keywords = {
     {"REAL", TokenType::REAL},
     {"INTEGER", TokenType::INTEGER},
     {"RETURN", TokenType::RETURN},
-    // Adicione outras palavras-chave conforme necessário
+    {"IF", TokenType::IF},
+    {"THEN", TokenType::THEN},
+    {"ELSE", TokenType::ELSE},
+    {"END_IF", TokenType::END_IF},
+    {"WHILE", TokenType::WHILE},
+    {"DO", TokenType::DO},
+    {"END_WHILE", TokenType::END_WHILE},
+    {"FOR", TokenType::FOR},
+    {"TO", TokenType::TO},
+    {"END_FOR", TokenType::END_FOR},
+    {"AND", TokenType::AND},
+    {"OR", TokenType::OR},
+    {"NOT", TokenType::NOT},
+    // Add other keywords as needed
 };
 
 Scanner::Scanner(const std::string& sourceCode)
@@ -63,8 +75,39 @@ void Scanner::scanToken() {
                     addToken(TokenType::SLASH);
                 }
                 break;
+            case '=':
+                if (match('=')) {
+                    addToken(TokenType::EQUAL_EQUAL);
+                } else {
+                    // Single '=' may not be valid; handle accordingly
+                    // addToken(TokenType::EQUAL); // If you have an EQUAL token
+                    throw std::runtime_error("Unexpected character '='");
+                }
+                break;
+            case '!':
+                if (match('=')) {
+                    addToken(TokenType::NOT_EQUAL);
+                } else {
+                    addToken(TokenType::NOT); // If '!' is valid as NOT operator
+                }
+                break;
+            case '<':
+                if (match('=')) {
+                    addToken(TokenType::LESS_EQUAL);
+                } else {
+                    addToken(TokenType::LESS);
+                }
+                break;
+            case '>':
+                if (match('=')) {
+                    addToken(TokenType::GREATER_EQUAL);
+                } else {
+                    addToken(TokenType::GREATER);
+                }
+                break;
             default:
-                // Ignora caracteres não reconhecidos
+                // Ignore unrecognized characters or throw an error
+                // throw std::runtime_error(std::string("Unexpected character '") + c + "'");
                 break;
         }
     }
@@ -113,9 +156,6 @@ void Scanner::addToken(TokenType type) {
 
 void Scanner::addToken(TokenType type, const std::string& text) {
     tokens.emplace_back(type, text);
-
-    // Log do token
-    std::cout << "Scanner: Adicionado token '" << text << "' do tipo " << static_cast<int>(type) << std::endl;
 }
 
 bool Scanner::match(char expected) {

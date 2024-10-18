@@ -31,9 +31,18 @@ private:
     std::unique_ptr<Statement> parseVariableDeclaration();
     std::unique_ptr<Statement> parseAssignment();
     std::unique_ptr<ReturnStatement> parseReturnStatement();
+    std::unique_ptr<Statement> parseIfStatement();
+    std::unique_ptr<Statement> parseWhileStatement();
+    std::unique_ptr<Statement> parseForStatement();
     std::unique_ptr<Expression> parseExpression();
+    std::unique_ptr<Expression> parseLogicalOr();
+    std::unique_ptr<Expression> parseLogicalAnd();
+    std::unique_ptr<Expression> parseEquality();
+    std::unique_ptr<Expression> parseComparison();
     std::unique_ptr<Expression> parseTerm();
     std::unique_ptr<Expression> parseFactor();
+    std::unique_ptr<Expression> parseUnary();
+    std::unique_ptr<Expression> parsePrimary();
 };
 
 #endif // PARSER_HPP

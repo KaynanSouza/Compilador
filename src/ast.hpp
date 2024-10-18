@@ -67,6 +67,7 @@ public:
 class Function : public Statement {
 public:
     std::string name;
+    std::string returnType; // Added return type
     std::vector<std::unique_ptr<Statement>> body;
 
     Function(const std::string& name)
@@ -106,12 +107,22 @@ public:
 // Binary operation
 class BinaryOperation : public Expression {
 public:
-    char op;
+    std::string op;
     std::unique_ptr<Expression> left;
     std::unique_ptr<Expression> right;
 
-    BinaryOperation(char op, std::unique_ptr<Expression> left, std::unique_ptr<Expression> right)
+    BinaryOperation(const std::string& op, std::unique_ptr<Expression> left, std::unique_ptr<Expression> right)
         : op(op), left(std::move(left)), right(std::move(right)) {}
+};
+
+// Unary operation
+class UnaryOperation : public Expression {
+public:
+    std::string op;
+    std::unique_ptr<Expression> operand;
+
+    UnaryOperation(const std::string& op, std::unique_ptr<Expression> operand)
+        : op(op), operand(std::move(operand)) {}
 };
 
 // Function call
@@ -122,6 +133,42 @@ public:
 
     FunctionCall(const std::string& functionName, std::vector<std::unique_ptr<Expression>> arguments)
         : functionName(functionName), arguments(std::move(arguments)) {}
+};
+
+// If statement
+class IfStatement : public Statement {
+public:
+    std::unique_ptr<Expression> condition;
+    std::unique_ptr<Statement> thenBranch;
+    std::unique_ptr<Statement> elseBranch; // Optional
+
+    IfStatement(std::unique_ptr<Expression> condition,
+                std::unique_ptr<Statement> thenBranch,
+                std::unique_ptr<Statement> elseBranch = nullptr)
+        : condition(std::move(condition)), thenBranch(std::move(thenBranch)), elseBranch(std::move(elseBranch)) {}
+};
+
+// While statement
+class WhileStatement : public Statement {
+public:
+    std::unique_ptr<Expression> condition;
+    std::unique_ptr<Statement> body;
+
+    WhileStatement(std::unique_ptr<Expression> condition, std::unique_ptr<Statement> body)
+        : condition(std::move(condition)), body(std::move(body)) {}
+};
+
+// For statement
+class ForStatement : public Statement {
+public:
+    std::unique_ptr<Assignment> initializer;
+    std::unique_ptr<Expression> endCondition;
+    std::unique_ptr<Statement> body;
+
+    ForStatement(std::unique_ptr<Assignment> initializer,
+                 std::unique_ptr<Expression> endCondition,
+                 std::unique_ptr<Statement> body)
+        : initializer(std::move(initializer)), endCondition(std::move(endCondition)), body(std::move(body)) {}
 };
 
 #endif // AST_HPP

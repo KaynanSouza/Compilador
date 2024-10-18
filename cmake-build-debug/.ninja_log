@@ -51,3 +51,12 @@
 1	541	1728997329091997343	CMakeFiles/Compilador.dir/src/parser_tests.cpp.o	b6aff8694499e757
 1	854	1728997329091997343	CMakeFiles/Compilador.dir/src/parser.cpp.o	d8c3d637902cfb3a
 854	912	1728997329944927497	Compilador	7e0811446bd50fd4
+6	790	1729102633883201507	CMakeFiles/Compilador.dir/src/scanner.cpp.o	b0d9afbb727ba902
+1	885	1729102651551287791	CMakeFiles/Compilador.dir/src/parser_tests.cpp.o	b6aff8694499e757
+1	909	1729102651551287791	CMakeFiles/Compilador.dir/src/compiler.cpp.o	86ebe9e9ab85f86d
+3	665	1729103428257903421	CMakeFiles/Compilador.dir/src/parser_tests.cpp.o	b6aff8694499e757
+2	773	1729103428256903219	CMakeFiles/Compilador.dir/src/scanner.cpp.o	b0d9afbb727ba902
+2	917	1729103428256903219	CMakeFiles/Compilador.dir/src/compiler.cpp.o	86ebe9e9ab85f86d
+2	864	1729103551469545249	CMakeFiles/Compilador.dir/src/parser.cpp.o	d8c3d637902cfb3a
+2	435	1729104223273595866	CMakeFiles/Compilador.dir/src/parser_tests.cpp.o	b6aff8694499e757
+435	619	1729104223706517519	Compilador	7e0811446bd50fd4
