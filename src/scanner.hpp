@@ -1,34 +1,34 @@
+// scanner.hpp
+
 #ifndef SCANNER_HPP
 #define SCANNER_HPP
 
+#include "token.hpp"
 #include <vector>
 #include <string>
-#include "token.hpp"
 
+// Classe responsável por analisar o código fonte e gerar a lista de tokens.
 class Scanner {
 public:
-    explicit Scanner(const std::string& sourceCode);
+    explicit Scanner(const std::string& source);
     std::vector<Token> scanTokens();
 
 private:
-    const std::string& source;
-    size_t current = 0;
-    size_t start = 0;
+    const std::string source;    // Código fonte a ser analisado
+    std::vector<Token> tokens;   // Lista de tokens gerados
+    size_t start = 0;            // Início do lexema atual
+    size_t current = 0;          // Posição atual no código fonte
+    size_t line = 1;             // Linha atual (para mensagens de erro)
 
-    std::vector<Token> tokens;
-
+    // Métodos auxiliares
     bool isAtEnd() const;
     char advance();
     char peek() const;
     char peekNext() const;
-    void skipWhitespace();
-    void skipComment();
-    void addToken(TokenType type);
-    void addToken(TokenType type, const std::string& text);
+    void addToken(TokenType type, const std::string& lexeme);
     void scanToken();
-    void identifier();
     void number();
-    bool match(char expected);
+    void identifier();
 };
 
 #endif // SCANNER_HPP

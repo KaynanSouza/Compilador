@@ -18,6 +18,7 @@ std::unique_ptr<Program> Parser::parse() {
     return program;
 }
 
+// Implementa a análise de declarações (funções, programas, etc.)
 std::unique_ptr<Statement> Parser::parseDeclaration() {
     if (match({TokenType::FUNCTION, TokenType::PROGRAM})) {
         return parseFunction();
@@ -26,17 +27,36 @@ std::unique_ptr<Statement> Parser::parseDeclaration() {
     }
 }
 
+// Analisa uma função ou programa
 std::unique_ptr<Function> Parser::parseFunction() {
-    TokenType funcType = previous().type;
+    TokenType funcType = previous().type; // Verifica se é FUNCTION ou PROGRAM
     std::string name = consume(TokenType::IDENTIFIER, "Esperado nome da função ou programa").lexeme;
 
     auto function = std::make_unique<Function>(name);
 
+    // Se for FUNCTION, pode ter um tipo de retorno
     if (funcType == TokenType::FUNCTION && match(TokenType::COLON)) {
-        Token returnTypeToken = consume({TokenType::REAL, TokenType::INTEGER}, "Esperado tipo de retorno após ':'");
+        Token returnTypeToken = consume({TokenType::REAL, TokenType::INTEGER, TokenType::BOOLEAN}, "Esperado tipo de retorno após ':'");
         function->returnType = returnTypeToken.lexeme;
     }
 
+    // Processa declarações de variáveis de entrada
+    while (match(TokenType::VAR_INPUT)) {
+        auto varDeclarations = parseVariableDeclaration();
+        for (auto& varDecl : varDeclarations) {
+            function->body.push_back(std::move(varDecl));
+        }
+    }
+
+    // Processa declarações de variáveis locais
+    while (match(TokenType::VAR)) {
+        auto varDeclarations = parseVariableDeclaration();
+        for (auto& varDecl : varDeclarations) {
+            function->body.push_back(std::move(varDecl));
+        }
+    }
+
+    // Processa outras declarações e statements
     while (!isAtEnd() && !check(TokenType::END_FUNCTION) && !check(TokenType::END_PROGRAM)) {
         auto stmt = parseStatement();
         if (stmt) {
@@ -44,6 +64,7 @@ std::unique_ptr<Function> Parser::parseFunction() {
         }
     }
 
+    // Consome o token de fim de função ou programa
     if (funcType == TokenType::FUNCTION) {
         consume(TokenType::END_FUNCTION, "Esperado END_FUNCTION");
     } else {
@@ -53,10 +74,9 @@ std::unique_ptr<Function> Parser::parseFunction() {
     return function;
 }
 
+// Analisa statements gerais
 std::unique_ptr<Statement> Parser::parseStatement() {
-    if (match({TokenType::VAR, TokenType::VAR_INPUT})) {
-        return parseVariableDeclaration();
-    } else if (match(TokenType::RETURN)) {
+    if (match(TokenType::RETURN)) {
         return parseReturnStatement();
     } else if (match(TokenType::IF)) {
         return parseIfStatement();
@@ -74,13 +94,14 @@ std::unique_ptr<Statement> Parser::parseStatement() {
     }
 }
 
-std::unique_ptr<Statement> Parser::parseVariableDeclaration() {
-    std::vector<std::unique_ptr<VariableDeclaration>> declarations;
+// Analisa declarações de variáveis
+std::vector<std::unique_ptr<Statement>> Parser::parseVariableDeclaration() {
+    std::vector<std::unique_ptr<Statement>> declarations;
 
     while (!isAtEnd() && !check(TokenType::END_VAR)) {
         std::string name = consume(TokenType::IDENTIFIER, "Esperado nome da variável").lexeme;
         consume(TokenType::COLON, "Esperado ':' após o nome da variável");
-        std::string type = consume({TokenType::REAL, TokenType::INTEGER}, "Esperado tipo após ':'").lexeme;
+        std::string type = consume({TokenType::REAL, TokenType::INTEGER, TokenType::BOOLEAN}, "Esperado tipo após ':'").lexeme;
         consume(TokenType::SEMICOLON, "Esperado ';' após a declaração da variável");
 
         declarations.push_back(std::make_unique<VariableDeclaration>(name, type));
@@ -88,15 +109,10 @@ std::unique_ptr<Statement> Parser::parseVariableDeclaration() {
 
     consume(TokenType::END_VAR, "Esperado END_VAR");
 
-    // Envolve as declarações em um bloco
-    std::vector<std::unique_ptr<Statement>> stmtDeclarations;
-    for (auto& decl : declarations) {
-        stmtDeclarations.push_back(std::move(decl));
-    }
-
-    return std::make_unique<BlockStatement>(std::move(stmtDeclarations));
+    return declarations;
 }
 
+// Analisa uma atribuição
 std::unique_ptr<Statement> Parser::parseAssignment() {
     std::string name = consume(TokenType::IDENTIFIER, "Esperado nome da variável").lexeme;
     consume(TokenType::ASSIGNMENT, "Esperado ':=' na atribuição");
@@ -108,12 +124,14 @@ std::unique_ptr<Statement> Parser::parseAssignment() {
     );
 }
 
+// Analisa uma instrução RETURN
 std::unique_ptr<ReturnStatement> Parser::parseReturnStatement() {
     auto value = parseExpression();
     consume(TokenType::SEMICOLON, "Esperado ';' após o retorno");
     return std::make_unique<ReturnStatement>(std::move(value));
 }
 
+// Analisa uma instrução IF
 std::unique_ptr<Statement> Parser::parseIfStatement() {
     consume(TokenType::LEFT_PAREN, "Esperado '(' após 'IF'");
     auto condition = parseExpression();
@@ -128,6 +146,7 @@ std::unique_ptr<Statement> Parser::parseIfStatement() {
     return std::make_unique<IfStatement>(std::move(condition), std::move(thenBranch), std::move(elseBranch));
 }
 
+// Analisa uma instrução WHILE
 std::unique_ptr<Statement> Parser::parseWhileStatement() {
     consume(TokenType::LEFT_PAREN, "Esperado '(' após 'WHILE'");
     auto condition = parseExpression();
@@ -138,6 +157,7 @@ std::unique_ptr<Statement> Parser::parseWhileStatement() {
     return std::make_unique<WhileStatement>(std::move(condition), std::move(body));
 }
 
+// Analisa uma instrução FOR
 std::unique_ptr<Statement> Parser::parseForStatement() {
     std::string varName = consume(TokenType::IDENTIFIER, "Esperado nome da variável de loop").lexeme;
     consume(TokenType::ASSIGNMENT, "Esperado ':=' na inicialização do loop");
@@ -153,10 +173,10 @@ std::unique_ptr<Statement> Parser::parseForStatement() {
 
     consume(TokenType::END_FOR, "Esperado 'END_FOR'");
 
-    // Chamando o construtor com 3 argumentos
     return std::make_unique<ForStatement>(std::move(initializer), std::move(endCondition), std::move(body));
 }
 
+// Métodos para analisar expressões, seguindo a precedência dos operadores
 std::unique_ptr<Expression> Parser::parseExpression() {
     return parseLogicalOr();
 }
@@ -234,9 +254,14 @@ std::unique_ptr<Expression> Parser::parsePrimary() {
     if (match(TokenType::NUMBER)) {
         double value = std::stod(previous().lexeme);
         return std::make_unique<Number>(value);
+    } else if (match(TokenType::TRUE)) {
+        return std::make_unique<BooleanLiteral>(true);
+    } else if (match(TokenType::FALSE)) {
+        return std::make_unique<BooleanLiteral>(false);
     } else if (match(TokenType::IDENTIFIER)) {
         std::string name = previous().lexeme;
         if (match(TokenType::LEFT_PAREN)) {
+            // Chamada de função
             std::vector<std::unique_ptr<Expression>> arguments;
             if (!check(TokenType::RIGHT_PAREN)) {
                 do {
@@ -246,6 +271,7 @@ std::unique_ptr<Expression> Parser::parsePrimary() {
             consume(TokenType::RIGHT_PAREN, "Esperado ')' após os argumentos da função");
             return std::make_unique<FunctionCall>(name, std::move(arguments));
         } else {
+            // Identificador
             return std::make_unique<Identifier>(name);
         }
     } else if (match(TokenType::LEFT_PAREN)) {
@@ -257,8 +283,7 @@ std::unique_ptr<Expression> Parser::parsePrimary() {
     }
 }
 
-// Métodos utilitários
-
+// Métodos auxiliares de navegação nos tokens
 bool Parser::isAtEnd() const {
     return peek().type == TokenType::EOF_TOKEN;
 }

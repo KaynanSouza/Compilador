@@ -16,4 +16,8 @@ add_executable(Compilador
         src/parser.cpp
         src/parser_tests.cpp
         src/statement.hpp
+        src/semantic_analyzer.hpp
+        src/semantic_analyzer.cpp
+        src/ast_optimizer.hpp
+        src/ast_optimizer.cpp
 )
