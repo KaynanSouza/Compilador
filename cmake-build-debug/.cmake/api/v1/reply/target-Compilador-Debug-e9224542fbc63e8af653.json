@@ -109,7 +109,8 @@
 				8,
 				11,
 				12,
-				14
+				14,
+				16
 			]
 		}
 	],
@@ -201,6 +202,11 @@
 			"compileGroupIndex" : 0,
 			"path" : "src/ast_optimizer.cpp",
 			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"path" : "src/operator_type.hpp",
+			"sourceGroupIndex" : 1
 		}
 	],
 	"type" : "EXECUTABLE"

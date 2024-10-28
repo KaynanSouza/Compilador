@@ -5,46 +5,138 @@
 #include <unordered_map>
 #include <stdexcept>
 
-// Mapeamento das palavras-chave para seus respectivos tipos de token.
-static std::unordered_map<std::string, TokenType> keywords = {
-    {"VAR", TokenType::VAR},
-    {"VAR_INPUT", TokenType::VAR_INPUT},
-    {"END_VAR", TokenType::END_VAR},
-    {"PROGRAM", TokenType::PROGRAM},
-    {"END_PROGRAM", TokenType::END_PROGRAM},
-    {"FUNCTION", TokenType::FUNCTION},
-    {"END_FUNCTION", TokenType::END_FUNCTION},
-    {"IF", TokenType::IF},
-    {"THEN", TokenType::THEN},
-    {"ELSE", TokenType::ELSE},
-    {"END_IF", TokenType::END_IF},
-    {"WHILE", TokenType::WHILE},
-    {"DO", TokenType::DO},
-    {"END_WHILE", TokenType::END_WHILE},
-    {"FOR", TokenType::FOR},
-    {"TO", TokenType::TO},
-    {"END_FOR", TokenType::END_FOR},
-    {"RETURN", TokenType::RETURN},
-    {"TRUE", TokenType::TRUE},
-    {"FALSE", TokenType::FALSE},
-    {"INTEGER", TokenType::INTEGER},
-    {"REAL", TokenType::REAL},
-    {"BOOLEAN", TokenType::BOOLEAN},
-    {"NOT", TokenType::NOT},
-    {"AND", TokenType::AND},
-    {"OR", TokenType::OR},
-};
-
-Scanner::Scanner(const std::string& source)
-    : source(source) {}
+Scanner::Scanner(const std::string& source) : source(source) {}
 
 std::vector<Token> Scanner::scanTokens() {
     while (!isAtEnd()) {
         start = current;
         scanToken();
     }
-    tokens.emplace_back(TokenType::EOF_TOKEN, ""); // Adiciona token de fim de arquivo
+    tokens.emplace_back(TokenType::EOF_TOKEN, "", line);
     return tokens;
+}
+
+void Scanner::scanToken() {
+    skipWhitespaceAndComments();
+    if (isAtEnd()) return;
+
+    char c = advance();
+
+    if (std::isalpha(c) || c == '_') {
+        identifier();
+    } else if (std::isdigit(c)) {
+        number();
+    } else {
+        switch (c) {
+            case '+':
+                addToken(TokenType::PLUS);
+                break;
+            case '-':
+                addToken(TokenType::MINUS);
+                break;
+            case '*':
+                addToken(TokenType::STAR);
+                break;
+            case '/':
+                addToken(TokenType::SLASH);
+                break;
+            case '(':
+                addToken(TokenType::LEFT_PAREN);
+                break;
+            case ')':
+                addToken(TokenType::RIGHT_PAREN);
+                break;
+            case '{':
+                addToken(TokenType::LEFT_BRACE);
+                break;
+            case '}':
+                addToken(TokenType::RIGHT_BRACE);
+                break;
+            case '[':
+                addToken(TokenType::LEFT_BRACKET);
+                break;
+            case ']':
+                addToken(TokenType::RIGHT_BRACKET);
+                break;
+            case ',':
+                addToken(TokenType::COMMA);
+                break;
+            case ';':
+                addToken(TokenType::SEMICOLON);
+                break;
+            case ':':
+                if (match('=')) {
+                    addToken(TokenType::ASSIGNMENT);
+                } else {
+                    addToken(TokenType::COLON);
+                }
+                break;
+            case '<':
+                if (match('=')) {
+                    addToken(TokenType::LESS_EQUAL);
+                } else {
+                    addToken(TokenType::LESS);
+                }
+                break;
+            case '>':
+                if (match('=')) {
+                    addToken(TokenType::GREATER_EQUAL);
+                } else {
+                    addToken(TokenType::GREATER);
+                }
+                break;
+            case '=':
+                addToken(TokenType::EQUAL_EQUAL); // Reconhece '=' como EQUAL_EQUAL
+            break;
+            case '!':
+                if (match('=')) {
+                    addToken(TokenType::NOT_EQUAL);
+                } else {
+                    throw std::runtime_error("Caractere inesperado '!' na linha " + std::to_string(line));
+                }
+                break;
+            case '.':
+                if (match('.')) {
+                    addToken(TokenType::DOT_DOT);
+                } else {
+                    addToken(TokenType::DOT);
+                }
+                break;
+            case '#':
+                // Chamar uma função para lidar com literais de tempo
+                    timeLiteral();
+            break;
+            default:
+                throw std::runtime_error("Caractere não reconhecido: '" + std::string(1, c) + "' na linha " + std::to_string(line));
+        }
+    }
+}
+
+void Scanner::skipWhitespaceAndComments() {
+    while (!isAtEnd()) {
+        char c = peek();
+        if (c == ' ' || c == '\r' || c == '\t') {
+            advance();
+        } else if (c == '\n') {
+            line++;
+            advance();
+        } else if (c == '(' && peekNext() == '*') {
+            // Comentário de múltiplas linhas
+            advance(); // Consome '('
+            advance(); // Consome '*'
+            while (!isAtEnd() && !(peek() == '*' && peekNext() == ')')) {
+                if (peek() == '\n') line++;
+                advance();
+            }
+            if (isAtEnd()) {
+                throw std::runtime_error("Comentário não fechado antes do fim do arquivo.");
+            }
+            advance(); // Consome '*'
+            advance(); // Consome ')'
+        } else {
+            break;
+        }
+    }
 }
 
 bool Scanner::isAtEnd() const {
@@ -53,6 +145,13 @@ bool Scanner::isAtEnd() const {
 
 char Scanner::advance() {
     return source[current++];
+}
+
+bool Scanner::match(char expected) {
+    if (isAtEnd()) return false;
+    if (source[current] != expected) return false;
+    current++;
+    return true;
 }
 
 char Scanner::peek() const {
@@ -65,137 +164,120 @@ char Scanner::peekNext() const {
     return source[current + 1];
 }
 
-void Scanner::addToken(TokenType type, const std::string& lexeme) {
-    tokens.emplace_back(type, lexeme);
+void Scanner::addToken(TokenType type) {
+    addToken(type, "");
 }
 
-void Scanner::scanToken() {
-    char c = advance();
-    if (isspace(static_cast<unsigned char>(c))) {
-        // Ignora espaços em branco e controla a contagem de linhas
-        if (c == '\n') {
-            line++;
+void Scanner::addToken(TokenType type, const std::string& text) {
+    std::string lexeme = source.substr(start, current - start);
+    tokens.emplace_back(type, lexeme, line);
+}
+
+void Scanner::timeLiteral() {
+    // Presumimos que o 'T' já foi consumido antes de chamar esta função
+    // Exemplo: T#5S
+
+    // Captura o número após o '#'
+    std::string value;
+    while (std::isdigit(peek())) {
+        value += advance();
+    }
+
+    // Captura a unidade de tempo (S, M, H, etc.)
+    std::string unit;
+    while (std::isalpha(peek())) {
+        unit += advance();
+    }
+
+    // Verifica se value e unit não estão vazios
+    if (value.empty() || unit.empty()) {
+        throw std::runtime_error("Literal de tempo inválido na linha " + std::to_string(line));
+    }
+
+    // Cria o lexema completo
+    std::string lexeme = "T#" + value + unit;
+
+    // Adiciona o token correspondente
+    addToken(TokenType::TIME_LITERAL, lexeme);
+}
+
+
+void Scanner::identifier() {
+
+    if (source.substr(current - 1, 2) == "T#") {
+        // Consome o '#' e chama timeLiteral()
+        advance(); // Consome '#'
+        timeLiteral();
+    } else {
+        // Código existente para identificar palavras-chave e identificadores
+        while (std::isalnum(peek()) || peek() == '_') advance();
+
+        std::string text = source.substr(start, current - start);
+
+        // Converte para maiúsculas para tornar a linguagem case-insensitive
+        std::string upperText;
+        for (char c : text) {
+            upperText += std::toupper(c);
         }
-        return;
+
+        static std::unordered_map<std::string, TokenType> keywords = {
+            {"VAR", TokenType::VAR},
+            {"VAR_INPUT", TokenType::VAR_INPUT},
+            {"VAR_OUTPUT", TokenType::VAR_OUTPUT},
+            {"END_VAR", TokenType::END_VAR},
+            {"FUNCTION", TokenType::FUNCTION},
+            {"END_FUNCTION", TokenType::END_FUNCTION},
+            {"FUNCTION_BLOCK", TokenType::FUNCTION_BLOCK},
+            {"END_FUNCTION_BLOCK", TokenType::END_FUNCTION_BLOCK},
+            {"PROGRAM", TokenType::PROGRAM},
+            {"END_PROGRAM", TokenType::END_PROGRAM},
+            {"IF", TokenType::IF},
+            {"THEN", TokenType::THEN},
+            {"ELSE", TokenType::ELSE},
+            {"ELSIF", TokenType::ELSIF},
+            {"END_IF", TokenType::END_IF},
+            {"WHILE", TokenType::WHILE},
+            {"DO", TokenType::DO},
+            {"END_WHILE", TokenType::END_WHILE},
+            {"FOR", TokenType::FOR},
+            {"TO", TokenType::TO},
+            {"END_FOR", TokenType::END_FOR},
+            {"RETURN", TokenType::RETURN},
+            {"ARRAY", TokenType::ARRAY},
+            {"OF", TokenType::OF},
+            {"AND", TokenType::AND},
+            {"OR", TokenType::OR},
+            {"NOT", TokenType::NOT},
+            {"TRUE", TokenType::TRUE},
+            {"FALSE", TokenType::FALSE},
+            // Tipos
+            {"INTEGER", TokenType::INTEGER},
+            {"REAL", TokenType::REAL},
+            {"BOOLEAN", TokenType::BOOLEAN},
+        };
+
+        TokenType type = TokenType::IDENTIFIER;
+        auto it = keywords.find(upperText);
+        if (it != keywords.end()) {
+            type = it->second;
+        }
+        addToken(type, text);
     }
-    switch (c) {
-        case '+':
-            addToken(TokenType::PLUS, "+");
-            break;
-        case '-':
-            addToken(TokenType::MINUS, "-");
-            break;
-        case '*':
-            addToken(TokenType::STAR, "*");
-            break;
-        case '/':
-            if (peek() == '/') {
-                // Comentário de linha única, ignora até o fim da linha
-                while (!isAtEnd() && peek() != '\n') {
-                    advance();
-                }
-            } else {
-                addToken(TokenType::SLASH, "/");
-            }
-            break;
-        case ':':
-            if (peek() == '=') {
-                advance();
-                addToken(TokenType::ASSIGNMENT, ":=");
-            } else {
-                addToken(TokenType::COLON, ":");
-            }
-            break;
-        case '=':
-            if (peek() == '=') {
-                advance();
-                addToken(TokenType::EQUAL_EQUAL, "==");
-            } else {
-                throw std::runtime_error("Caractere não reconhecido: '=' na linha " + std::to_string(line));
-            }
-            break;
-        case '!':
-            if (peek() == '=') {
-                advance();
-                addToken(TokenType::NOT_EQUAL, "!=");
-            } else {
-                throw std::runtime_error("Caractere não reconhecido: '!' na linha " + std::to_string(line));
-            }
-            break;
-        case '<':
-            if (peek() == '=') {
-                advance();
-                addToken(TokenType::LESS_EQUAL, "<=");
-            } else {
-                addToken(TokenType::LESS, "<");
-            }
-            break;
-        case '>':
-            if (peek() == '=') {
-                advance();
-                addToken(TokenType::GREATER_EQUAL, ">=");
-            } else {
-                addToken(TokenType::GREATER, ">");
-            }
-            break;
-        case '(':
-            addToken(TokenType::LEFT_PAREN, "(");
-            break;
-        case ')':
-            addToken(TokenType::RIGHT_PAREN, ")");
-            break;
-        case ';':
-            addToken(TokenType::SEMICOLON, ";");
-            break;
-        case ',':
-            addToken(TokenType::COMMA, ",");
-            break;
-        default:
-            if (isdigit(static_cast<unsigned char>(c))) {
-                // Número (inteiro ou real)
-                current--;
-                number();
-            } else if (isalpha(static_cast<unsigned char>(c))) {
-                // Identificador ou palavra-chave
-                current--;
-                identifier();
-            } else {
-                // Caractere não reconhecido
-                int code = static_cast<unsigned char>(c);
-                throw std::runtime_error("Caractere não reconhecido: código ASCII " + std::to_string(code) + " na linha " + std::to_string(line));
-            }
-            break;
-    }
+
+
 }
 
 void Scanner::number() {
-    std::string numStr;
-    while (isdigit(peek())) {
-        numStr += advance();
+    while (std::isdigit(peek())) advance();
+
+    // Verifica por parte fracionária
+    if (peek() == '.' && std::isdigit(peekNext())) {
+        // Consome o "."
+        advance();
+
+        while (std::isdigit(peek())) advance();
     }
 
-    // Verifica se é um número real
-    if (peek() == '.' && isdigit(peekNext())) {
-        numStr += advance(); // Adiciona o ponto decimal
-        while (isdigit(peek())) {
-            numStr += advance();
-        }
-    }
-
-    addToken(TokenType::NUMBER, numStr);
-}
-
-void Scanner::identifier() {
-    std::string identifier;
-    while (isalnum(peek()) || peek() == '_') {
-        identifier += advance();
-    }
-
-    // Verifica se o identificador é uma palavra-chave
-    auto keywordIt = keywords.find(identifier);
-    if (keywordIt != keywords.end()) {
-        addToken(keywordIt->second, identifier);
-    } else {
-        addToken(TokenType::IDENTIFIER, identifier);
-    }
+    std::string text = source.substr(start, current - start);
+    addToken(TokenType::NUMBER, text);
 }

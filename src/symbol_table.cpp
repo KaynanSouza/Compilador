@@ -3,34 +3,28 @@
 #include "symbol_table.hpp"
 
 void SymbolTable::enterScope() {
-    scopes.emplace_back(); // Adiciona um novo escopo à pilha
+    scopes.push_back({});
 }
 
 void SymbolTable::exitScope() {
-    if (!scopes.empty()) {
-        scopes.pop_back(); // Remove o escopo atual da pilha
-    }
+    scopes.pop_back();
 }
 
-bool SymbolTable::declare(const std::string& name, const std::string& type, SymbolType symbolType) {
-    if (scopes.empty()) {
-        enterScope(); // Garante que exista pelo menos um escopo
-    }
-    auto& currentScope = scopes.back();
-    auto result = currentScope.emplace(name, Symbol(name, type, symbolType));
-    if (!result.second) {
-        return false; // Já declarado neste escopo
-    }
-    return true;
+void SymbolTable::define(const std::string& name, const std::string& type, SymbolType symbolType) {
+    Symbol symbol(name, type, symbolType);
+    scopes.back()[name] = symbol;
 }
 
 Symbol* SymbolTable::resolve(const std::string& name) {
-    // Procura o símbolo nos escopos, do mais interno ao mais externo
     for (auto scopeIt = scopes.rbegin(); scopeIt != scopes.rend(); ++scopeIt) {
         auto it = scopeIt->find(name);
         if (it != scopeIt->end()) {
             return &(it->second);
         }
     }
-    return nullptr; // Não encontrado
+    return nullptr;
+}
+
+std::unordered_map<std::string, Symbol>& SymbolTable::currentScope() {
+    return scopes.back();
 }

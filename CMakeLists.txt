@@ -20,4 +20,5 @@ add_executable(Compilador
         src/semantic_analyzer.cpp
         src/ast_optimizer.hpp
         src/ast_optimizer.cpp
+        src/operator_type.hpp
 )

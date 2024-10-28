@@ -5,73 +5,80 @@
 
 #include <string>
 
-// Enumeração dos tipos de tokens que podem ser reconhecidos pelo scanner.
 enum class TokenType {
+    // Tokens de um caractere
+    LEFT_PAREN,     // (
+    RIGHT_PAREN,    // )
+    LEFT_BRACE,     // {
+    RIGHT_BRACE,    // }
+    COMMA,          // ,
+    DOT,            // .
+    SEMICOLON,      // ;
+    COLON,          // :
+    PLUS,           // +
+    MINUS,          // -
+    STAR,           // *
+    SLASH,          // /
+    ASSIGNMENT,     // :=
+    EQUAL_EQUAL,    // ==
+    NOT_EQUAL,      // !=
+    LESS,           // <
+    LESS_EQUAL,     // <=
+    GREATER,        // >
+    GREATER_EQUAL,  // >=
+    AND,            // AND
+    OR,             // OR
+    NOT,            // NOT
+    LEFT_BRACKET,   // [
+    RIGHT_BRACKET,  // ]
+    DOT_DOT,        // ..  <-- Adicionado
     // Literais
-    IDENTIFIER,   // Identificadores (nomes de variáveis, funções, etc.)
-    NUMBER,       // Números (inteiros e reais)
-    TRUE,         // Literal booleano TRUE
-    FALSE,        // Literal booleano FALSE
-
+    IDENTIFIER,
+    STRING,
+    NUMBER,
     // Palavras-chave
-    VAR,          // 'VAR'
-    VAR_INPUT,    // 'VAR_INPUT'
-    END_VAR,      // 'END_VAR'
-    PROGRAM,      // 'PROGRAM'
-    END_PROGRAM,  // 'END_PROGRAM'
-    FUNCTION,     // 'FUNCTION'
-    END_FUNCTION, // 'END_FUNCTION'
-    IF,           // 'IF'
-    THEN,         // 'THEN'
-    ELSE,         // 'ELSE'
-    END_IF,       // 'END_IF'
-    WHILE,        // 'WHILE'
-    DO,           // 'DO'
-    END_WHILE,    // 'END_WHILE'
-    FOR,          // 'FOR'
-    TO,           // 'TO'
-    END_FOR,      // 'END_FOR'
-    RETURN,       // 'RETURN'
-    BOOLEAN,      // 'BOOLEAN'
-
+    VAR,
+    VAR_INPUT,
+    VAR_OUTPUT,     // <-- Adicionado
+    END_VAR,
+    FUNCTION,
+    END_FUNCTION,
+    FUNCTION_BLOCK,     // <-- Adicionado
+    END_FUNCTION_BLOCK, // <-- Adicionado
+    PROGRAM,
+    END_PROGRAM,
+    IF,
+    THEN,
+    ELSE,
+    ELSIF,              // <-- Adicionado
+    END_IF,
+    WHILE,
+    DO,
+    END_WHILE,
+    FOR,
+    TO,
+    END_FOR,
+    RETURN,
+    ARRAY,          // <-- Adicionado
+    OF,             // <-- Adicionado
+    TRUE,
+    FALSE,
     // Tipos
-    INTEGER,      // 'INTEGER'
-    REAL,         // 'REAL'
-
-    // Operadores
-    PLUS,           // '+'
-    MINUS,          // '-'
-    STAR,           // '*'
-    SLASH,          // '/'
-    ASSIGNMENT,     // ':='
-    EQUAL_EQUAL,    // '=='
-    NOT_EQUAL,      // '!='
-    LESS,           // '<'
-    LESS_EQUAL,     // '<='
-    GREATER,        // '>'
-    GREATER_EQUAL,  // '>='
-    NOT,            // 'NOT'
-    AND,            // 'AND'
-    OR,             // 'OR'
-
-    // Delimitadores
-    LEFT_PAREN,     // '('
-    RIGHT_PAREN,    // ')'
-    COLON,          // ':'
-    SEMICOLON,      // ';'
-    COMMA,          // ','
-
-    // Especial
-    EOF_TOKEN       // Fim do arquivo
+    INTEGER,        // <-- Adicionado
+    REAL,           // <-- Adicionado
+    BOOLEAN,        // <-- Adicionado
+    // Outros
+    EOF_TOKEN,
+    TIME_LITERAL
 };
 
-// Estrutura que representa um token, contendo seu tipo e lexema.
 struct Token {
-    TokenType type;       // Tipo do token
-    std::string lexeme;   // Texto original do token
+    TokenType type;
+    std::string lexeme;
+    int line;
 
-    Token(TokenType type, const std::string& lexeme)
-        : type(type), lexeme(lexeme) {}
+    Token(TokenType type, const std::string& lexeme, int line)
+        : type(type), lexeme(lexeme), line(line) {}
 };
 
 #endif // TOKEN_HPP

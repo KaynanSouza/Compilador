@@ -7,18 +7,19 @@
 #include <memory>
 #include "token.hpp"
 #include "ast.hpp"
+#include "operator_type.hpp"
 
-// Classe responsável por analisar a lista de tokens e gerar a AST.
 class Parser {
 public:
-    explicit Parser(const std::vector<Token>& tokens);
+    Parser(const std::vector<Token>& tokens);
+
     std::unique_ptr<Program> parse();
 
 private:
-    const std::vector<Token>& tokens;  // Lista de tokens a serem analisados
-    size_t current = 0;                // Posição atual na lista de tokens
+    const std::vector<Token>& tokens;
+    size_t current = 0;
 
-    // Métodos auxiliares de navegação nos tokens
+    // Métodos auxiliares
     bool isAtEnd() const;
     const Token& peek() const;
     const Token& previous() const;
@@ -29,18 +30,19 @@ private:
     Token consume(TokenType type, const std::string& message);
     Token consume(std::initializer_list<TokenType> types, const std::string& message);
 
-    // Métodos de análise sintática
+    // Métodos de parsing
     std::unique_ptr<Statement> parseDeclaration();
     std::unique_ptr<Function> parseFunction();
     std::unique_ptr<Statement> parseStatement();
     std::vector<std::unique_ptr<Statement>> parseVariableDeclaration();
+
     std::unique_ptr<Statement> parseAssignment();
     std::unique_ptr<ReturnStatement> parseReturnStatement();
     std::unique_ptr<Statement> parseIfStatement();
     std::unique_ptr<Statement> parseWhileStatement();
     std::unique_ptr<Statement> parseForStatement();
 
-    // Métodos de análise de expressões
+    // Métodos de parsing de expressões
     std::unique_ptr<Expression> parseExpression();
     std::unique_ptr<Expression> parseLogicalOr();
     std::unique_ptr<Expression> parseLogicalAnd();
@@ -50,6 +52,9 @@ private:
     std::unique_ptr<Expression> parseFactor();
     std::unique_ptr<Expression> parseUnary();
     std::unique_ptr<Expression> parsePrimary();
+
+    // Auxiliar para operadores
+    OperatorType getOperatorType(TokenType type);
 };
 
 #endif // PARSER_HPP

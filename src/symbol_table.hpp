@@ -6,34 +6,39 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <memory>
 
-// Enumeração para o tipo de símbolo (variável ou função)
 enum class SymbolType {
     VARIABLE,
-    FUNCTION
+    FUNCTION,
+    ARRAY,
+    // Adicione outros tipos, se necessário
 };
 
-// Estrutura que representa um símbolo na tabela de símbolos
 struct Symbol {
-    std::string name;       // Nome do símbolo
-    std::string type;       // Tipo do símbolo (ex: INTEGER, REAL)
-    SymbolType symbolType;  // Tipo do símbolo (variável ou função)
+    std::string name;
+    std::string type;
+    SymbolType symbolType;
+    std::vector<std::pair<int, int>> dimensions; // Para arrays
+
+    // Construtor padrão
+    Symbol() = default;
 
     Symbol(const std::string& name, const std::string& type, SymbolType symbolType)
         : name(name), type(type), symbolType(symbolType) {}
 };
 
-// Classe que implementa a tabela de símbolos com suporte a escopos
 class SymbolTable {
 public:
-    void enterScope();  // Entra em um novo escopo
-    void exitScope();   // Sai do escopo atual
-    bool declare(const std::string& name, const std::string& type, SymbolType symbolType); // Declara um novo símbolo
-    Symbol* resolve(const std::string& name); // Resolve um símbolo pelo nome
+    void enterScope();
+    void exitScope();
+    void define(const std::string& name, const std::string& type, SymbolType symbolType);
+    Symbol* resolve(const std::string& name);
+
+    std::unordered_map<std::string, Symbol>& currentScope();
 
 private:
-    // Pilha de escopos, cada escopo é um mapa de símbolos
-    std::vector<std::unordered_map<std::string, Symbol>> scopes;
+    std::vector<std::unordered_map<std::string, Symbol>> scopes = {{}};
 };
 
 #endif // SYMBOL_TABLE_HPP

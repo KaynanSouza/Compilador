@@ -1,13 +1,4 @@
-// parser_tests.cpp
-
-#include "parser.hpp"
-#include "scanner.hpp"
-#include "semantic_analyzer.hpp"
-#include "ast_optimizer.hpp"
-#include <iostream>
-
-void testParser() {
-    std::string code = R"(
+std::string code = R"(
         (* Declaration of global variables *)
         VAR_GLOBAL
             globalCount : INT := 0;
@@ -96,33 +87,3 @@ void testParser() {
         END_PROGRAM
 
     )";
-
-    Scanner scanner(code);
-    auto tokens = scanner.scanTokens();
-
-    Parser parser(tokens);
-    try {
-        auto ast = parser.parse();
-
-        // Realiza a análise semântica
-        SemanticAnalyzer analyzer;
-        analyzer.debug = true; // Ativa o modo de depuração
-        analyzer.analyze(ast.get());
-
-        // Otimiza a AST
-        ASTOptimizer optimizer;
-        optimizer.optimize(ast.get());
-
-        std::cout << "Análise semântica e otimização concluídas com sucesso." << std::endl;
-
-        // Opcional: implementar uma função para imprimir a AST otimizada
-        // printAST(ast.get());
-    } catch (const std::exception& e) {
-        std::cerr << "Erro durante a análise: " << e.what() << std::endl;
-    }
-}
-
-int main() {
-    testParser();
-    return 0;
-}

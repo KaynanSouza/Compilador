@@ -7,30 +7,29 @@
 #include "symbol_table.hpp"
 #include <string>
 
-// Classe responsável por realizar a análise semântica da AST.
 class SemanticAnalyzer {
 public:
     void analyze(Program* program);
 
-private:
-    SymbolTable symbolTable;  // Tabela de símbolos para rastrear variáveis e funções
+    // Debug flag
+    bool debug = false;
 
-    // Métodos para visitar diferentes tipos de nós na AST
+private:
+    SymbolTable symbolTable;
+
     void visitProgram(Program* program);
     void visitFunction(Function* function);
-    void visitBlockStatement(BlockStatement* block);
     void visitVariableDeclaration(VariableDeclaration* varDecl);
+    void visitArrayDeclaration(ArrayDeclaration* arrayDecl);
     void visitAssignment(Assignment* assignment);
     void visitReturnStatement(ReturnStatement* returnStmt);
     void visitIfStatement(IfStatement* ifStmt);
     void visitWhileStatement(WhileStatement* whileStmt);
     void visitForStatement(ForStatement* forStmt);
+    void visitStatement(Statement* stmt);
     void visitExpression(Expression* expr);
     std::string visitExpressionAndGetType(Expression* expr);
 
-    void visitStatement(Statement* stmt);
-
-    // Variável para armazenar o tipo de retorno da função atual
     std::string currentFunctionReturnType;
 };
 
