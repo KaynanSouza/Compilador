@@ -31,7 +31,7 @@ enum class TokenType {
     NOT,            // NOT
     LEFT_BRACKET,   // [
     RIGHT_BRACKET,  // ]
-    DOT_DOT,        // ..  <-- Adicionado
+    DOT_DOT,        // ..
     // Literais
     IDENTIFIER,
     STRING,
@@ -39,18 +39,19 @@ enum class TokenType {
     // Palavras-chave
     VAR,
     VAR_INPUT,
-    VAR_OUTPUT,     // <-- Adicionado
+    VAR_OUTPUT,
+    VAR_GLOBAL,
     END_VAR,
     FUNCTION,
     END_FUNCTION,
-    FUNCTION_BLOCK,     // <-- Adicionado
-    END_FUNCTION_BLOCK, // <-- Adicionado
+    FUNCTION_BLOCK,
+    END_FUNCTION_BLOCK,
     PROGRAM,
     END_PROGRAM,
     IF,
     THEN,
     ELSE,
-    ELSIF,              // <-- Adicionado
+    ELSIF,
     END_IF,
     WHILE,
     DO,
@@ -59,14 +60,14 @@ enum class TokenType {
     TO,
     END_FOR,
     RETURN,
-    ARRAY,          // <-- Adicionado
-    OF,             // <-- Adicionado
+    ARRAY,
+    OF,
     TRUE,
     FALSE,
     // Tipos
-    INTEGER,        // <-- Adicionado
-    REAL,           // <-- Adicionado
-    BOOLEAN,        // <-- Adicionado
+    INTEGER,
+    REAL,
+    BOOLEAN,
     // Outros
     EOF_TOKEN,
     TIME_LITERAL

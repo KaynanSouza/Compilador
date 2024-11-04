@@ -23,7 +23,12 @@ void Scanner::scanToken() {
     char c = advance();
 
     if (std::isalpha(c) || c == '_') {
-        identifier();
+        if (c == 'T' && peek() == '#') {
+            advance(); // Consome '#'
+            timeLiteral();
+        } else {
+            identifier();
+        }
     } else if (std::isdigit(c)) {
         number();
     } else {
@@ -87,7 +92,7 @@ void Scanner::scanToken() {
                 break;
             case '=':
                 addToken(TokenType::EQUAL_EQUAL); // Reconhece '=' como EQUAL_EQUAL
-            break;
+                break;
             case '!':
                 if (match('=')) {
                     addToken(TokenType::NOT_EQUAL);
@@ -102,10 +107,6 @@ void Scanner::scanToken() {
                     addToken(TokenType::DOT);
                 }
                 break;
-            case '#':
-                // Chamar uma função para lidar com literais de tempo
-                    timeLiteral();
-            break;
             default:
                 throw std::runtime_error("Caractere não reconhecido: '" + std::string(1, c) + "' na linha " + std::to_string(line));
         }
@@ -173,11 +174,78 @@ void Scanner::addToken(TokenType type, const std::string& text) {
     tokens.emplace_back(type, lexeme, line);
 }
 
+void Scanner::identifier() {
+    while (std::isalnum(peek()) || peek() == '_') advance();
+
+    std::string text = source.substr(start, current - start);
+
+    // Converte para maiúsculas para tornar a linguagem case-insensitive
+    std::string upperText;
+    for (char c : text) {
+        upperText += std::toupper(c);
+    }
+
+    static std::unordered_map<std::string, TokenType> keywords = {
+        {"VAR", TokenType::VAR},
+        {"VAR_INPUT", TokenType::VAR_INPUT},
+        {"VAR_OUTPUT", TokenType::VAR_OUTPUT},
+        {"END_VAR", TokenType::END_VAR},
+        {"FUNCTION", TokenType::FUNCTION},
+        {"END_FUNCTION", TokenType::END_FUNCTION},
+        {"FUNCTION_BLOCK", TokenType::FUNCTION_BLOCK},
+        {"END_FUNCTION_BLOCK", TokenType::END_FUNCTION_BLOCK},
+        {"PROGRAM", TokenType::PROGRAM},
+        {"END_PROGRAM", TokenType::END_PROGRAM},
+        {"IF", TokenType::IF},
+        {"THEN", TokenType::THEN},
+        {"ELSE", TokenType::ELSE},
+        {"ELSIF", TokenType::ELSIF},
+        {"END_IF", TokenType::END_IF},
+        {"WHILE", TokenType::WHILE},
+        {"DO", TokenType::DO},
+        {"END_WHILE", TokenType::END_WHILE},
+        {"FOR", TokenType::FOR},
+        {"TO", TokenType::TO},
+        {"END_FOR", TokenType::END_FOR},
+        {"RETURN", TokenType::RETURN},
+        {"ARRAY", TokenType::ARRAY},
+        {"OF", TokenType::OF},
+        {"AND", TokenType::AND},
+        {"OR", TokenType::OR},
+        {"NOT", TokenType::NOT},
+        {"TRUE", TokenType::TRUE},
+        {"FALSE", TokenType::FALSE},
+        // Tipos
+        {"INTEGER", TokenType::INTEGER},
+        {"REAL", TokenType::REAL},
+        {"BOOLEAN", TokenType::BOOLEAN},
+    };
+
+    TokenType type = TokenType::IDENTIFIER;
+    auto it = keywords.find(upperText);
+    if (it != keywords.end()) {
+        type = it->second;
+    }
+    addToken(type, text);
+}
+
+void Scanner::number() {
+    while (std::isdigit(peek())) advance();
+
+    // Verifica por parte fracionária
+    if (peek() == '.' && std::isdigit(peekNext())) {
+        advance(); // Consome o '.'
+        while (std::isdigit(peek())) advance();
+    }
+
+    std::string text = source.substr(start, current - start);
+    addToken(TokenType::NUMBER, text);
+}
+
 void Scanner::timeLiteral() {
-    // Presumimos que o 'T' já foi consumido antes de chamar esta função
     // Exemplo: T#5S
 
-    // Captura o número após o '#'
+    // Captura o número após 'T#'
     std::string value;
     while (std::isdigit(peek())) {
         value += advance();
@@ -189,95 +257,10 @@ void Scanner::timeLiteral() {
         unit += advance();
     }
 
-    // Verifica se value e unit não estão vazios
     if (value.empty() || unit.empty()) {
         throw std::runtime_error("Literal de tempo inválido na linha " + std::to_string(line));
     }
 
-    // Cria o lexema completo
     std::string lexeme = "T#" + value + unit;
-
-    // Adiciona o token correspondente
     addToken(TokenType::TIME_LITERAL, lexeme);
-}
-
-
-void Scanner::identifier() {
-
-    if (source.substr(current - 1, 2) == "T#") {
-        // Consome o '#' e chama timeLiteral()
-        advance(); // Consome '#'
-        timeLiteral();
-    } else {
-        // Código existente para identificar palavras-chave e identificadores
-        while (std::isalnum(peek()) || peek() == '_') advance();
-
-        std::string text = source.substr(start, current - start);
-
-        // Converte para maiúsculas para tornar a linguagem case-insensitive
-        std::string upperText;
-        for (char c : text) {
-            upperText += std::toupper(c);
-        }
-
-        static std::unordered_map<std::string, TokenType> keywords = {
-            {"VAR", TokenType::VAR},
-            {"VAR_INPUT", TokenType::VAR_INPUT},
-            {"VAR_OUTPUT", TokenType::VAR_OUTPUT},
-            {"END_VAR", TokenType::END_VAR},
-            {"FUNCTION", TokenType::FUNCTION},
-            {"END_FUNCTION", TokenType::END_FUNCTION},
-            {"FUNCTION_BLOCK", TokenType::FUNCTION_BLOCK},
-            {"END_FUNCTION_BLOCK", TokenType::END_FUNCTION_BLOCK},
-            {"PROGRAM", TokenType::PROGRAM},
-            {"END_PROGRAM", TokenType::END_PROGRAM},
-            {"IF", TokenType::IF},
-            {"THEN", TokenType::THEN},
-            {"ELSE", TokenType::ELSE},
-            {"ELSIF", TokenType::ELSIF},
-            {"END_IF", TokenType::END_IF},
-            {"WHILE", TokenType::WHILE},
-            {"DO", TokenType::DO},
-            {"END_WHILE", TokenType::END_WHILE},
-            {"FOR", TokenType::FOR},
-            {"TO", TokenType::TO},
-            {"END_FOR", TokenType::END_FOR},
-            {"RETURN", TokenType::RETURN},
-            {"ARRAY", TokenType::ARRAY},
-            {"OF", TokenType::OF},
-            {"AND", TokenType::AND},
-            {"OR", TokenType::OR},
-            {"NOT", TokenType::NOT},
-            {"TRUE", TokenType::TRUE},
-            {"FALSE", TokenType::FALSE},
-            // Tipos
-            {"INTEGER", TokenType::INTEGER},
-            {"REAL", TokenType::REAL},
-            {"BOOLEAN", TokenType::BOOLEAN},
-        };
-
-        TokenType type = TokenType::IDENTIFIER;
-        auto it = keywords.find(upperText);
-        if (it != keywords.end()) {
-            type = it->second;
-        }
-        addToken(type, text);
-    }
-
-
-}
-
-void Scanner::number() {
-    while (std::isdigit(peek())) advance();
-
-    // Verifica por parte fracionária
-    if (peek() == '.' && std::isdigit(peekNext())) {
-        // Consome o "."
-        advance();
-
-        while (std::isdigit(peek())) advance();
-    }
-
-    std::string text = source.substr(start, current - start);
-    addToken(TokenType::NUMBER, text);
 }

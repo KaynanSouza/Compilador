@@ -21,4 +21,7 @@ add_executable(Compilador
         src/ast_optimizer.hpp
         src/ast_optimizer.cpp
         src/operator_type.hpp
+        src/ast.cpp
+        src/value.hpp
+        src/value.cpp
 )

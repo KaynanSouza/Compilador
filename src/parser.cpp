@@ -51,9 +51,19 @@ std::unique_ptr<Program> Parser::parse() {
     return program;
 }
 
+std::unique_ptr<Statement> Parser::parseGlobalVariableDeclaration() {
+    // Implementação similar ao parseVariableDeclaration
+    auto declarations = parseVariableDeclaration();
+    // Em um contexto real, você pode querer marcar essas variáveis como globais
+    // Para simplificar, retornaremos um bloco contendo as declarações
+    return std::make_unique<BlockStatement>(std::move(declarations));
+}
+
 std::unique_ptr<Statement> Parser::parseDeclaration() {
     if (match({TokenType::FUNCTION, TokenType::PROGRAM, TokenType::FUNCTION_BLOCK})) {
         return parseFunction();
+    } else if (match(TokenType::VAR_GLOBAL)) {
+        return parseGlobalVariableDeclaration();
     } else {
         return parseStatement();
     }
@@ -69,6 +79,8 @@ std::unique_ptr<Function> Parser::parseFunction() {
     if (funcType == TokenType::FUNCTION && match(TokenType::COLON)) {
         Token returnTypeToken = consume({TokenType::REAL, TokenType::INTEGER, TokenType::BOOLEAN, TokenType::IDENTIFIER}, "Esperado tipo de retorno após ':'");
         function->returnType = returnTypeToken.lexeme;
+    } else if (funcType == TokenType::PROGRAM || funcType == TokenType::FUNCTION_BLOCK) {
+        function->returnType = "VOID";
     }
 
     // Processa declarações de variáveis de entrada
@@ -116,11 +128,11 @@ std::unique_ptr<Statement> Parser::parseStatement() {
         return parseWhileStatement();
     } else if (match(TokenType::FOR)) {
         return parseForStatement();
-    } else if (check(TokenType::IDENTIFIER)) {
-        return parseAssignment();
     } else if (match(TokenType::SEMICOLON)) {
         // Declaração vazia, ignora
         return nullptr;
+    } else if (check(TokenType::IDENTIFIER)) {
+        return parseAssignmentOrFunctionCall();
     } else {
         throw std::runtime_error("Token inesperado: " + peek().lexeme);
     }
@@ -179,27 +191,40 @@ std::vector<std::unique_ptr<Statement>> Parser::parseVariableDeclaration() {
     return declarations;
 }
 
-std::unique_ptr<Statement> Parser::parseAssignment() {
-    std::string name = consume(TokenType::IDENTIFIER, "Esperado nome da variável").lexeme;
+std::unique_ptr<Statement> Parser::parseAssignmentOrFunctionCall() {
+    std::string name = consume(TokenType::IDENTIFIER, "Esperado nome da variável ou função").lexeme;
 
-    // Verifica se é acesso a elemento de array
-    std::unique_ptr<Expression> lhs = std::make_unique<Identifier>(name);
-    while (match(TokenType::LEFT_BRACKET)) {
-        std::vector<std::unique_ptr<Expression>> indices;
-        do {
-            indices.push_back(parseExpression());
-        } while (match(TokenType::COMMA));
-        consume(TokenType::RIGHT_BRACKET, "Esperado ']' após os índices do array");
-        lhs = std::make_unique<ArrayAccess>(std::move(lhs), std::move(indices));
+    // Verifica se é chamada de função
+    if (match(TokenType::LEFT_PAREN)) {
+        // Chamada de função
+        std::vector<std::unique_ptr<Expression>> arguments;
+        if (!check(TokenType::RIGHT_PAREN)) {
+            do {
+                arguments.push_back(parseExpression());
+            } while (match(TokenType::COMMA));
+        }
+        consume(TokenType::RIGHT_PAREN, "Esperado ')' após os argumentos da função");
+        consume(TokenType::SEMICOLON, "Esperado ';' após a chamada da função");
+        return std::make_unique<ExpressionStatement>(std::make_unique<FunctionCall>(name, std::move(arguments)));
+    } else {
+        // Pode ser atribuição ou acesso a array
+        std::unique_ptr<Expression> lhs = std::make_unique<Identifier>(name);
+
+        // Verifica se é acesso a elemento de array
+        while (match(TokenType::LEFT_BRACKET)) {
+            std::vector<std::unique_ptr<Expression>> indices;
+            do {
+                indices.push_back(parseExpression());
+            } while (match(TokenType::COMMA));
+            consume(TokenType::RIGHT_BRACKET, "Esperado ']' após os índices do array");
+            lhs = std::make_unique<ArrayAccess>(std::move(lhs), std::move(indices));
+        }
+
+        consume(TokenType::ASSIGNMENT, "Esperado ':=' na atribuição");
+        auto value = parseExpression();
+        consume(TokenType::SEMICOLON, "Esperado ';' após a atribuição");
+        return std::make_unique<Assignment>(std::move(lhs), std::move(value));
     }
-
-    consume(TokenType::ASSIGNMENT, "Esperado ':=' na atribuição");
-    auto value = parseExpression();
-    consume(TokenType::SEMICOLON, "Esperado ';' após a atribuição");
-    return std::make_unique<Assignment>(
-        std::move(lhs),
-        std::move(value)
-    );
 }
 
 std::unique_ptr<ReturnStatement> Parser::parseReturnStatement() {
@@ -213,10 +238,12 @@ std::unique_ptr<Statement> Parser::parseIfStatement() {
     auto condition = parseExpression();
     consume(TokenType::RIGHT_PAREN, "Esperado ')' após a condição");
     consume(TokenType::THEN, "Esperado 'THEN' após a condição");
-    auto thenBranch = parseStatement();
+    auto thenBranch = parseBlock();
     std::unique_ptr<Statement> elseBranch = nullptr;
     if (match(TokenType::ELSE)) {
-        elseBranch = parseStatement();
+        elseBranch = parseBlock();
+    } else if (match(TokenType::ELSIF)) {
+        elseBranch = parseIfStatement();
     }
     consume(TokenType::END_IF, "Esperado 'END_IF'");
     return std::make_unique<IfStatement>(std::move(condition), std::move(thenBranch), std::move(elseBranch));
@@ -227,7 +254,7 @@ std::unique_ptr<Statement> Parser::parseWhileStatement() {
     auto condition = parseExpression();
     consume(TokenType::RIGHT_PAREN, "Esperado ')' após a condição");
     consume(TokenType::DO, "Esperado 'DO' após a condição");
-    auto body = parseStatement();
+    auto body = parseBlock();
     consume(TokenType::END_WHILE, "Esperado 'END_WHILE'");
     return std::make_unique<WhileStatement>(std::move(condition), std::move(body));
 }
@@ -243,11 +270,25 @@ std::unique_ptr<Statement> Parser::parseForStatement() {
 
     consume(TokenType::DO, "Esperado 'DO' após a condição do loop");
 
-    auto body = parseStatement();
+    auto body = parseBlock();
 
     consume(TokenType::END_FOR, "Esperado 'END_FOR'");
 
     return std::make_unique<ForStatement>(std::move(initializer), std::move(endCondition), std::move(body));
+}
+
+std::unique_ptr<BlockStatement> Parser::parseBlock() {
+    std::vector<std::unique_ptr<Statement>> statements;
+
+    while (!isAtEnd() && !check(TokenType::END_IF) && !check(TokenType::ELSE) && !check(TokenType::ELSIF) &&
+           !check(TokenType::END_WHILE) && !check(TokenType::END_FOR)) {
+        auto stmt = parseStatement();
+        if (stmt) {
+            statements.push_back(std::move(stmt));
+        }
+    }
+
+    return std::make_unique<BlockStatement>(std::move(statements));
 }
 
 std::unique_ptr<Expression> Parser::parseExpression() {
@@ -368,7 +409,7 @@ std::unique_ptr<Expression> Parser::parsePrimary() {
     }
 }
 
-// Helper methods
+// Métodos auxiliares
 
 bool Parser::isAtEnd() const {
     return peek().type == TokenType::EOF_TOKEN;

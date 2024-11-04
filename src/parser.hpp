@@ -36,6 +36,9 @@ private:
     std::unique_ptr<Statement> parseStatement();
     std::vector<std::unique_ptr<Statement>> parseVariableDeclaration();
 
+    std::unique_ptr<Statement> parseGlobalVariableDeclaration();
+    std::unique_ptr<Statement> parseAssignmentOrFunctionCall();
+    std::unique_ptr<BlockStatement> parseBlock();
     std::unique_ptr<Statement> parseAssignment();
     std::unique_ptr<ReturnStatement> parseReturnStatement();
     std::unique_ptr<Statement> parseIfStatement();

@@ -12,7 +12,7 @@ enum class SymbolType {
     VARIABLE,
     FUNCTION,
     ARRAY,
-    // Adicione outros tipos, se necessário
+    // Outros tipos, se necessário
 };
 
 struct Symbol {
@@ -20,8 +20,8 @@ struct Symbol {
     std::string type;
     SymbolType symbolType;
     std::vector<std::pair<int, int>> dimensions; // Para arrays
+    std::vector<std::string> parameterTypes;     // Para funções
 
-    // Construtor padrão
     Symbol() = default;
 
     Symbol(const std::string& name, const std::string& type, SymbolType symbolType)

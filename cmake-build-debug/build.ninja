@@ -91,6 +91,18 @@ build CMakeFiles/Compilador.dir/src/ast_optimizer.cpp.o: CXX_COMPILER__Compilado
   OBJECT_DIR = CMakeFiles/Compilador.dir
   OBJECT_FILE_DIR = CMakeFiles/Compilador.dir/src
 
+build CMakeFiles/Compilador.dir/src/ast.cpp.o: CXX_COMPILER__Compilador_unscanned_Debug /home/kaynan/Documentos/trabalho/compilador/Compilador/src/ast.cpp || cmake_object_order_depends_target_Compilador
+  DEP_FILE = CMakeFiles/Compilador.dir/src/ast.cpp.o.d
+  FLAGS = -g -std=gnu++20 -fdiagnostics-color=always
+  OBJECT_DIR = CMakeFiles/Compilador.dir
+  OBJECT_FILE_DIR = CMakeFiles/Compilador.dir/src
+
+build CMakeFiles/Compilador.dir/src/value.cpp.o: CXX_COMPILER__Compilador_unscanned_Debug /home/kaynan/Documentos/trabalho/compilador/Compilador/src/value.cpp || cmake_object_order_depends_target_Compilador
+  DEP_FILE = CMakeFiles/Compilador.dir/src/value.cpp.o.d
+  FLAGS = -g -std=gnu++20 -fdiagnostics-color=always
+  OBJECT_DIR = CMakeFiles/Compilador.dir
+  OBJECT_FILE_DIR = CMakeFiles/Compilador.dir/src
+
 
 # =============================================================================
 # Link build statements for EXECUTABLE target Compilador
@@ -99,7 +111,7 @@ build CMakeFiles/Compilador.dir/src/ast_optimizer.cpp.o: CXX_COMPILER__Compilado
 #############################################
 # Link the executable Compilador
 
-build Compilador: CXX_EXECUTABLE_LINKER__Compilador_Debug CMakeFiles/Compilador.dir/src/compiler.cpp.o CMakeFiles/Compilador.dir/src/scanner.cpp.o CMakeFiles/Compilador.dir/src/symbol_table.cpp.o CMakeFiles/Compilador.dir/src/parser.cpp.o CMakeFiles/Compilador.dir/src/parser_tests.cpp.o CMakeFiles/Compilador.dir/src/semantic_analyzer.cpp.o CMakeFiles/Compilador.dir/src/ast_optimizer.cpp.o
+build Compilador: CXX_EXECUTABLE_LINKER__Compilador_Debug CMakeFiles/Compilador.dir/src/compiler.cpp.o CMakeFiles/Compilador.dir/src/scanner.cpp.o CMakeFiles/Compilador.dir/src/symbol_table.cpp.o CMakeFiles/Compilador.dir/src/parser.cpp.o CMakeFiles/Compilador.dir/src/parser_tests.cpp.o CMakeFiles/Compilador.dir/src/semantic_analyzer.cpp.o CMakeFiles/Compilador.dir/src/ast_optimizer.cpp.o CMakeFiles/Compilador.dir/src/ast.cpp.o CMakeFiles/Compilador.dir/src/value.cpp.o
   FLAGS = -g
   OBJECT_DIR = CMakeFiles/Compilador.dir
   POST_BUILD = :

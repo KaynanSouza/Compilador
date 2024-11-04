@@ -31,6 +31,7 @@ private:
     void identifier();
     void number();
     void skipWhitespaceAndComments();
+    void timeLiteral();
 };
 
 #endif // SCANNER_HPP
